@@ -1,0 +1,5 @@
+gradio==5.22.0
+logging==0.4.9.6
+dotenv==0.9.9
+huggingface_hub==0.29.3
+python-docx==1.1.2
