@@ -1,6 +1,6 @@
 # CodeLlama Chatbot with Document Context
 
-This is a Gradio-based chatbot application that utilizes the CodeLlama-34b-Instruct-hf model from Hugging Face for conversational interactions. It allows users to upload `.txt` or `.docx` files to provide additional context for the chatbot's responses.
+This Gradio-based chatbot application utilizes the CodeLlama-34b-Instruct-hf model from Hugging Face for conversational interactions. It allows users to upload `.txt` or `.docx` files to provide additional context for the chatbot's responses.
 
 ## Features
 
@@ -14,7 +14,7 @@ This is a Gradio-based chatbot application that utilizes the CodeLlama-34b-Instr
 
 ## Prerequisites
 
-* Python 3.6+
+* Python 3.12
 * `pip` (Python package installer)
 * Hugging Face API key (stored in a `.env` file)
 
@@ -66,13 +66,13 @@ This is a Gradio-based chatbot application that utilizes the CodeLlama-34b-Instr
     * It specifies the `respond` function as the chatbot's response generator.
     * It adds input components for `max_tokens`, `temperature`, and file upload.
 * **`.env` and API Key:**
-    * The `.env` file and `load_dotenv()` are used to securely manage the Hugging Face API key.
+    * The `.env` file and `load_dotenv()` are used to manage the Hugging Face API key securely.
     * This prevents the API key from being hardcoded in the script.
 * **File Handling:**
     * The code handles `.txt` and `.docx` files, extracting the text content for context.
     * The `python-docx` library is used for `.docx` files.
 * **Logging:**
-    * The `logging` module is used to log execution details and errors.
+    * The `logging` module logs execution details and errors.
 
 ## Dependencies
 
