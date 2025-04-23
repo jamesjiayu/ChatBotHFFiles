@@ -1,8 +1,8 @@
 """
 Project: AI Chatbot
-Date: 03/25
+Date: 04/25
 Author: James W.
-Desc: CodeLlama-34b-Instruct-hf knowledge cutoff is December 31, 2022. Maximum context window (e.g., 4096 tokens)
+Desc: deepseek-ai/DeepSeek-R1 knowledge cutoff is July 2024. Maximum context window (e.g., 4096 tokens)
 """
 
 import gradio as gr
@@ -11,17 +11,20 @@ import os
 from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
 from docx import Document
+from openai import OpenAI
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-api_key = os.getenv("HUGGINGFACE_API_KEY") #get your huggingface api key and put it in .env
+api_key = os.getenv("HUGGINGFACE_API_KEY")
+# get your huggingface api key and put it in .env
 
 client = InferenceClient(
-    #base_url="https://router.huggingface.co/hf-inference/models/codellama/CodeLlama-34b-Instruct-hf/v1",
-    provider="hf-inference",#default
-    api_key=api_key
+    # base_url="https://router.huggingface.co/hf-inference/models/codellama/CodeLlama-34b-Instruct-hf/v1",
+    # default    provider="hf-inference",
+    provider="fireworks-ai",
+    api_key=api_key,
 )
 
 """history_msg:
@@ -39,36 +42,33 @@ if file is not None:
     system_msg += f" Additional context from uploaded file: {file_content}"
 """
 
-def respond(current_msg,
-            history_msg,
-            max_tokens,
-            temperature,
-            file):
+
+def respond(current_msg, history_msg, max_tokens, temperature, file):
     system_msg = "You are a friendly assistant chatbot. Answer directly and concisely."
     if file is not None:
         if file.endswith(".txt"):
             with open(file, "r", encoding="utf-8") as f:
-                file_content=f.read()
+                file_content = f.read()
         elif file.endswith(".docx"):
-            doc=Document(file)
-            #file_content="\n".join([para.text for para in doc.paragraphs])
-            file_content=""
+            doc = Document(file)
+            # file_content="\n".join([para.text for para in doc.paragraphs])
+            file_content = ""
             for paragraph in doc.paragraphs:
-                file_content+=paragraph.text + "\n"            
-        system_msg+= f" Additional context from uploaded file:{file_content}"
+                file_content += paragraph.text + "\n"
+        system_msg += f" Additional context from uploaded file:{file_content}"
     messages = [{"role": "system", "content": system_msg}]
     for msg in history_msg:
-        messages.append(
-            {"role": msg.get("role"), "content": msg.get("content")})
+        messages.append({"role": msg.get("role"), "content": msg.get("content")})
     messages.append({"role": "user", "content": current_msg})
     response = ""
     try:
         chat_completion_output = client.chat.completions.create(
             messages=messages,
-            model="codellama/CodeLlama-34b-Instruct-hf",
+            model="deepseek-ai/DeepSeek-R1", 
+            #"codellama/CodeLlama-34b-Instruct-hf",
             max_tokens=max_tokens,
             temperature=temperature,
-            stream=False
+            stream=False,
         )
         response = chat_completion_output.choices[0].message.content
     except ConnectionError as e:
@@ -86,16 +86,19 @@ def respond(current_msg,
         logger.info("Execution completed.")
 
 
-chatbot = gr.ChatInterface(fn=respond,
-                        type="messages",
-                        additional_inputs=[
-                            gr.Slider(minimum=1, maximum=2048, value=256,
-                                      step=1, label="Max output tokens"),
-                            gr.Slider(minimum=0.1, maximum=1.0, value=0.2, step=0.1, label="Creativeness"),
-                            gr.File(label="Upload a text file", file_types=[".txt",".docx"])
-                            ])
+chatbot = gr.ChatInterface(
+    fn=respond,
+    type="messages",
+    additional_inputs=[
+        gr.Slider(
+            minimum=1, maximum=2048, value=256, step=1, label="Max output tokens"
+        ),
+        gr.Slider(minimum=0.1, maximum=1.0, value=0.2, step=0.1, label="Creativeness"),
+        gr.File(label="Upload a text file", file_types=[".txt", ".docx"]),
+    ],
+)
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 chatbot.launch(share=True)
 
 
@@ -122,7 +125,7 @@ chatbot.launch(share=True)
 # ):
 #     # Clean history to keep only "role" and "content" his error occurs when using the Hugging Face Inference API (via InferenceClient). The messages list in your request includes extra fields (metadata and options) that the API doesn’t allow. These fields are likely coming from Gradio’s ChatInterface with type="messages", which adds them automatically
 #     history_cleaned = [{"role": msg["role"], "content": msg["content"]} for msg in history]
-    
+
 #     # Build the messages list
 #     messages = [{"role": "system", "content": system_message}] + history_cleaned
 #     messages.append({"role": "user", "content": message})
@@ -142,7 +145,7 @@ chatbot.launch(share=True)
 #     except Exception as e:
 #         print(f"My Error: {e}")
 #         return f"My Error: {e}"
-    
+
 # """
 # For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
 # """
@@ -164,9 +167,9 @@ chatbot.launch(share=True)
 # )
 
 
-# if __name__ == "__main__": 
+# if __name__ == "__main__":
 #     demo.launch()
-#如果脚本直接运行（而非被导入），启动 Gradio 界面。if __name__ == "__main__": 确保某些代码（这里是 demo.launch()）只在脚本被直接运行时执行，而不是在被导入时意外触发。
+# 如果脚本直接运行（而非被导入），启动 Gradio 界面。if __name__ == "__main__": 确保某些代码（这里是 demo.launch()）只在脚本被直接运行时执行，而不是在被导入时意外触发。
 
 # try:
 #     for message in client.chat_completion(...):
